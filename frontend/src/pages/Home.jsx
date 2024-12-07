@@ -1,12 +1,12 @@
 import React from 'react';
 import HeroSection from '../components/home/HeroSection';
-import FeaturedBooks from '../components/home/FeaturedBooks';
+import FeaturedProducts from '../components/home/FeaturedProducts';
 
 function Home() {
   return (
     <>
       <HeroSection />
-      <FeaturedBooks />
+      <FeaturedProducts />
     </>
   );
 }
