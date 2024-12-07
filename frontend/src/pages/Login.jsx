@@ -13,10 +13,11 @@ function Login() {
     e.preventDefault();
     setError('');
     try {
+      // Attempt login
       await login(email, password);
-      navigate('/');
-    } catch (error) {
-      setError('Failed to login. Please check your credentials.');
+      navigate('/'); // Redirect to home page
+    } catch (err) {
+      setError(err.message || 'Failed to login. Please check your credentials.');
     }
   };
 
@@ -41,6 +42,7 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              placeholder="Enter your email"
             />
           </div>
           <div>
@@ -54,6 +56,7 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              placeholder="Enter your password"
             />
           </div>
           <button
@@ -64,6 +67,23 @@ function Login() {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
+        <div className="text-center mt-4">
+          <p className="text-gray-600">
+            Forgot your password?{' '}
+            <a
+              href="/reset-password"
+              className="text-blue-600 hover:underline"
+            >
+              Reset here
+            </a>
+          </p>
+          <p className="text-gray-600 mt-2">
+            Don't have an account?{' '}
+            <a href="/register" className="text-blue-600 hover:underline">
+              Register now
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

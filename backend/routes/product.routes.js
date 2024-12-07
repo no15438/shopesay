@@ -32,6 +32,9 @@ router.get('/:id', productController.getProductById);
 // Get products by category
 router.get('/category/:categoryId', productController.getProductsByCategory);
 
+// Get product reviews
+router.get('/:productId/reviews', productController.getProductReviews);
+
 // Create a new product (Admin only)
 router.post(
     '/',
@@ -60,5 +63,32 @@ router.put(
 
 // Delete a product (Admin only)
 router.delete('/:id', verifyToken, verifyAdmin, productController.deleteProduct);
+
+// Add product review (Authenticated users)
+router.post(
+    '/:productId/reviews',
+    verifyToken,
+    [
+        body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
+        body('reviewText').optional().trim()
+    ],
+    handleValidationErrors,
+    productController.addProductReview
+);
+
+// Get product inventory (Admin only)
+router.get('/:productId/inventory', verifyToken, verifyAdmin, productController.getProductInventory);
+
+// Update product inventory (Admin only)
+router.put(
+    '/:productId/inventory',
+    verifyToken,
+    verifyAdmin,
+    [
+        body('stock').isInt({ min: 0 }).withMessage('Stock must be a non-negative integer')
+    ],
+    handleValidationErrors,
+    productController.updateProductInventory
+);
 
 module.exports = router;

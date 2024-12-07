@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
         const token = jwt.sign(
             { id: result.insertId },
             process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRY || '24h' }
+            { expiresIn: process.env.JWT_EXPIRY || '7d' }
         );
 
         res.status(201).json({

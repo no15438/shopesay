@@ -66,6 +66,18 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
+-- 商品评价表
+CREATE TABLE IF NOT EXISTS product_reviews (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    rating INT NOT NULL, -- 评分
+    review_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
 INSERT INTO categories (name, description) VALUES 
 ('Electronics', 'Electronic gadgets and devices'),
 ('Clothing', 'Apparel and fashion items'),
@@ -104,3 +116,8 @@ INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
 (1, 1, 2, 699.99), -- Smartphone
 (1, 3, 1, 19.99),  -- T-shirt
 (2, 4, 1, 499.99); -- Air Conditioner
+
+INSERT INTO product_reviews (user_id, product_id, rating, review_text) VALUES
+(2, 1, 5, 'Excellent smartphone with great features!'),
+(3, 2, 4, 'Laptop is fast, but the battery life could be better.'),
+(2, 3, 3, 'The T-shirt is comfortable, but the size runs small.');
