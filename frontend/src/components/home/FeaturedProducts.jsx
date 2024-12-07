@@ -8,7 +8,7 @@ function FeaturedProducts() {
   // UseEffect hook to fetch data when component mounts
   useEffect(() => {
     // Fetch products from backend API
-    fetch('/api/products') // Assume backend endpoint /api/products returns the featured products
+    fetch('http://localhost:5001/api/products') // Assume backend endpoint /api/products returns the featured products
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to fetch products');
@@ -42,11 +42,26 @@ function FeaturedProducts() {
       ) : (
         // Iterate over products array and display each product
         products.map((product) => (
-          <div key={product.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div
+            key={product.id}
+            className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow"
+          >
+            {product.image_url ? (
+              <div
+                className="h-40 bg-cover bg-center"
+                style={{ backgroundImage: `url(${product.image_url})` }}
+              ></div>
+            ) : (
+              <div className="h-40 bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-500">No Image Available</span>
+              </div>
+            )}
             <div className="p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-2">{product.name}</h3> {/* Display product name */}
-              <p className="text-gray-600 mb-4">{product.description}</p> {/* Display product description */}
+              <p className="text-gray-600 mb-2">{product.description}</p> {/* Display product description */}
+              <p className="text-gray-600 mb-2">Category: {product.category_name}</p> {/* Display category name */}
               <p className="text-gray-900 font-semibold mb-4">${product.price}</p> {/* Display product price */}
+              <p className="text-gray-600 mb-4">Stock: {product.stock}</p> {/* Display stock quantity */}
               <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                 Learn More
               </button> {/* Button to learn more about the product */}

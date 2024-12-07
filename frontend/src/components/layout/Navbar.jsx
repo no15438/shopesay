@@ -50,9 +50,6 @@ function Navbar() {
           <Link to="/" className="nav-link">
             Home
           </Link>
-          <Link to="/products" className="nav-link">
-            Products
-          </Link>
           <Link to="/categories" className="nav-link">
             Categories
           </Link>
@@ -69,7 +66,10 @@ function Navbar() {
           </Link>
           {user ? (
             <>
-              <span className="text-gray-600">Welcome, {user.email}</span>
+              <Link to="/dashboard" className="nav-link">
+                Dashboard
+              </Link>
+              <span className="text-gray-600">Welcome, {user.username}</span>
               <button
                 onClick={logout}
                 className="nav-link bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"

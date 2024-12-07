@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
 function HeroSection() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); 
-  const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate(); 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if user is logged in by checking for token in localStorage
@@ -22,42 +21,20 @@ function HeroSection() {
     }
   };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery) {
-      navigate(`/search?q=${searchQuery}`); // Navigate to search results page
-    }
-  };
-
   return (
-    <div 
-      className="bg-cover bg-center rounded-lg shadow-lg p-6 mb-6" 
+    <div
+      className="rounded-lg shadow-lg p-6 mb-6"
       style={{
-        backgroundImage: 'url(/path/to/your/image.jpg)' // Set your background image here
+        backgroundColor: '#1a202c', // Dark gray background
+        color: '#f7fafc', // Light gray text
       }}
     >
-      <h2 className="text-3xl font-bold text-white mb-4">Welcome to our Shopping Website</h2>
-      <p className="text-white mb-4">Discover a wide range of products for every need.</p>
-
-      <form onSubmit={handleSearchSubmit} className="mb-4">
-        <input
-          type="text"
-          placeholder="Search for products"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="p-2 border rounded w-full"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-2 w-full"
-        >
-          Search
-        </button>
-      </form>
+      <h2 className="text-4xl font-extrabold mb-4">Welcome to ShopEasy</h2>
+      <p className="text-lg mb-6">Discover exclusive deals and a wide range of products for every need.</p>
 
       <button
         onClick={handleButtonClick}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600"
       >
         {isLoggedIn ? 'Browse Products' : 'Login to Browse Products'}
       </button>
