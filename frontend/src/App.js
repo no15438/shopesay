@@ -1,45 +1,43 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { CartProvider } from './contexts/CartContext'; // Ensure CartProvider is imported
-import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
+import { CartProvider } from './contexts/CartContext';
+import Layout from './components/layout/Layout'; // 使用 Layout 替代重复代码
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
-import Register from './pages/Register'; // Import Register page
-import ResetPassword from './pages/ResetPassword'; // Import Reset Password page
-import Dashboard from './pages/Dashboard'; // Import Dashboard page
+import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
+import Dashboard from './pages/Dashboard';
+import Categories from './pages/Categories';
+import CategoryProducts from './pages/CategoryProducts';
+import ProductDetail from './pages/ProductDetail';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
     <AuthProvider>
-      <CartProvider> {/* Wrap the app with CartProvider */}
+      <CartProvider>
         <Router>
-          <div className="min-h-screen bg-gray-100 flex flex-col">
-            {/* Header section with Navbar */}
-            <header className="bg-white shadow-md">
-              <Navbar />
-            </header>
+          <Layout>
+            <Routes>
+              {/* Static Pages */}
+              <Route path="/" element={<Home />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/dashboard" element={<Dashboard />} />
 
-            {/* Main content area */}
-            <main className="flex-grow">
-              <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <Routes>
-                  {/* Define app routes */}
-                  <Route path="/" element={<Home />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} /> {/* Add register route */}
-                  <Route path="/reset-password" element={<ResetPassword />} /> {/* Add reset password route */}
-                  <Route path="/dashboard" element={<Dashboard />} /> {/* Add dashboard route */}
-                </Routes>
-              </div>
-            </main>
+              {/* Dynamic Pages */}
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/categories/:id" element={<CategoryProducts />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
 
-            {/* Footer section */}
-            <Footer />
-          </div>
+              {/* Catch-all Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
         </Router>
       </CartProvider>
     </AuthProvider>

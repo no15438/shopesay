@@ -13,4 +13,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/categories/:id - Fetch category by ID
+router.get('/:id', async (req, res) => {
+    try {
+        const { id } = req.params; // 从 URL 获取分类 ID
+        const [category] = await db.execute('SELECT * FROM categories WHERE id = ?', [id]); // SQL 查询分类
+        if (category.length === 0) {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+        res.json({ category: category[0] }); // 返回单个分类信息
+    } catch (error) {
+        console.error('Error fetching category by ID:', error);
+        res.status(500).json({ message: 'Error fetching category by ID' });
+    }
+});
+
 module.exports = router;
