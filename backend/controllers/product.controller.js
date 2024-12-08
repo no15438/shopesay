@@ -196,3 +196,14 @@ exports.updateProductInventory = async (req, res) => {
         res.status(500).json({ message: 'Error updating product inventory' });
     }
 };
+
+exports.getFeaturedProducts = async (req, res) => {
+    console.log('Fetching featured products...');
+    try {
+        const [products] = await db.execute('SELECT * FROM products WHERE is_featured = 1');
+        res.status(200).json(products);
+    } catch (error) {
+        console.error('Error fetching featured products:', error);
+        res.status(500).json({ message: 'Failed to fetch featured products' });
+    }
+};

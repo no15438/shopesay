@@ -49,20 +49,31 @@ exports.getOrderById = async (req, res) => {
 exports.createOrder = async (req, res) => {
     try {
         const userId = req.user?.id;
-        const { totalAmount, shippingAddress } = req.body;
+        const { productId, quantity, shippingAddress } = req.body;
 
-        if (!userId || typeof totalAmount !== 'number' || totalAmount <= 0 || !shippingAddress || shippingAddress.length < 5 || shippingAddress.length > 255) {
+        // Input validation
+        if (!userId || !productId || typeof quantity !== 'number' || quantity <= 0 || !shippingAddress || shippingAddress.length < 5 || shippingAddress.length > 255) {
             return res.status(400).json({ message: 'Invalid input: ensure all fields are valid' });
         }
 
-        console.log('Creating order with:', { userId, totalAmount, shippingAddress });
+        // Fetch product price from the database
+        const [productResult] = await db.execute('SELECT price FROM products WHERE id = ?', [productId]);
+        if (productResult.length === 0) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
 
-        const [result] = await db.execute(
-            'INSERT INTO orders (user_id, total_amount, status, shipping_address) VALUES (?, ?, ?, ?)',
-            [userId, totalAmount, 'pending', shippingAddress]
+        const productPrice = productResult[0].price;
+        const totalAmount = productPrice * quantity;
+
+        console.log('Creating order with:', { userId, productId, quantity, totalAmount, shippingAddress });
+
+        // Insert order into the database
+        const [orderResult] = await db.execute(
+            'INSERT INTO orders (user_id, product_id, quantity, total_amount, status, shipping_address) VALUES (?, ?, ?, ?, ?, ?)',
+            [userId, productId, quantity, totalAmount, 'pending', shippingAddress]
         );
 
-        res.status(201).json({ message: 'Order created successfully', orderId: result.insertId });
+        res.status(201).json({ message: 'Order created successfully', orderId: orderResult.insertId });
     } catch (error) {
         console.error('Error creating order:', error);
         res.status(500).json({ message: 'Failed to create order' });

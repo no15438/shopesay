@@ -14,9 +14,6 @@ function Home() {
       {/* Promotion Banner */}
       <PromoBanner />
 
-      {/* Categories Section */}
-      <CategoriesSection />
-
       {/* Featured Products Section */}
       <section className="py-10 bg-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,6 +24,9 @@ function Home() {
           <FeaturedProducts />
         </div>
       </section>
+
+      {/* Categories Section */}
+      <CategoriesSection />
 
       {/* Customer Testimonials */}
       <Testimonials />

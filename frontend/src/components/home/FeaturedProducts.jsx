@@ -1,76 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-function FeaturedProducts() {
-  const [products, setProducts] = useState([]); // State to store products data
-  const [loading, setLoading] = useState(true); // State to track loading status
-  const [error, setError] = useState(''); // State to handle errors
+const FeaturedProducts = () => {
+  const [products, setProducts] = useState([]); // 商品数据
+  const [loading, setLoading] = useState(true); // 加载状态
+  const [error, setError] = useState(null); // 错误状态
 
-  // UseEffect hook to fetch data when component mounts
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001'; // 后端 API 地址
+
   useEffect(() => {
-    // Fetch products from backend API
-    fetch('http://localhost:5001/api/products') // Assume backend endpoint /api/products returns the featured products
-      .then((response) => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/products/featured`);
         if (!response.ok) {
-          throw new Error('Failed to fetch products');
+          throw new Error(`Failed to fetch products: ${response.statusText}`);
         }
-        return response.json(); // Convert response to JSON
-      })
-      .then((data) => {
-        setProducts(data); // Set the fetched products to state
-        setLoading(false); // Set loading to false after data is fetched
-      })
-      .catch((err) => {
-        setError(err.message); // Set error if any occurs during fetch
-        setLoading(false); // Set loading to false when error happens
-      });
-  }, []); // Empty dependency array to run the effect once when component mounts
+        const data = await response.json();
+        setProducts(data);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError(err.message || 'An error occurred while fetching products.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Show loading message if data is still being fetched
+    fetchProducts();
+  }, [API_URL]);
+
   if (loading) {
-    return <p>Loading products...</p>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+        <p className="ml-4 text-blue-500 font-semibold">Loading featured products...</p>
+      </div>
+    );
   }
 
-  // Show error message if there is an error during fetch
   if (error) {
-    return <p>Error: {error}</p>;
+    return (
+      <div className="text-red-500 text-center font-semibold">
+        <p>Error: {error}</p>
+        <p>Please try refreshing the page or check back later.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {products.length === 0 ? (
-        <p>No featured products available</p> // Show message if no products are available
-      ) : (
-        // Iterate over products array and display each product
-        products.map((product) => (
-          <div
-            key={product.id}
-            className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow"
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {products.map((product) => (
+        <div key={product.id} className="border p-4 rounded shadow hover:shadow-lg transition">
+          <img
+            src={product.image_url || '/assets/images/placeholder.png'}
+            alt={product.name}
+            className="w-full h-40 object-cover mb-4 rounded"
+          />
+          <h3 className="text-lg font-bold mb-2">{product.name}</h3>
+          <p className="text-sm text-gray-600 mb-4">{product.description}</p>
+          <p className="text-gray-800 font-bold text-lg">${product.price}</p>
+          <Link
+            to={`/product/${product.id}`} // 跳转到商品详情页面
+            className="text-blue-600 hover:underline"
           >
-            {product.image_url ? (
-              <div
-                className="h-40 bg-cover bg-center"
-                style={{ backgroundImage: `url(${product.image_url})` }}
-              ></div>
-            ) : (
-              <div className="h-40 bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500">No Image Available</span>
-              </div>
-            )}
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{product.name}</h3> {/* Display product name */}
-              <p className="text-gray-600 mb-2">{product.description}</p> {/* Display product description */}
-              <p className="text-gray-600 mb-2">Category: {product.category_name}</p> {/* Display category name */}
-              <p className="text-gray-900 font-semibold mb-4">${product.price}</p> {/* Display product price */}
-              <p className="text-gray-600 mb-4">Stock: {product.stock}</p> {/* Display stock quantity */}
-              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Learn More
-              </button> {/* Button to learn more about the product */}
-            </div>
-          </div>
-        ))
-      )}
+            View Details
+          </Link>
+        </div>
+      ))}
     </div>
   );
-}
+};
 
 export default FeaturedProducts;

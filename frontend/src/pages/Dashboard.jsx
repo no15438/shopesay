@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom'; // 引入 useNavigate 钩子
 
 function Dashboard() {
-  const { user, logout } = useAuth(); // 获取用户信息和登出功能
+  const { user } = useAuth(); // 仅获取用户信息
   const [stats, setStats] = useState({}); // 用于存储统计信息
   const [recentOrders, setRecentOrders] = useState([]); // 用于存储近期订单
   const [cartItems, setCartItems] = useState([]); // 用于存储购物车信息
@@ -60,12 +61,6 @@ function Dashboard() {
           {/* 显示用户名而不是邮箱 */}
           <p className="text-lg">Welcome, {user?.username || 'User'}!</p>
         </div>
-        <button
-          onClick={logout}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-        >
-          Logout
-        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

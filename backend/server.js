@@ -6,6 +6,9 @@ const db = require('./config/db'); // Import database configuration
 
 const app = express();
 
+// Log the environment when the server starts
+console.log(`Running in ${process.env.NODE_ENV || 'development'} mode`);
+
 // Check for required environment variables
 const requiredEnvVars = ['PORT', 'DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME', 'JWT_SECRET'];
 requiredEnvVars.forEach((varName) => {
@@ -40,15 +43,26 @@ app.get('/', (req, res) => {
     res.json({ message: 'Server is running!' });
 });
 
-// Routes configuration
+// Routes configuration with logging
 try {
+    console.log('Loading product routes...');
     app.use('/api/products', require('./routes/product.routes')); // Product-related routes
+    console.log('/api/products route loaded successfully');
+
+    console.log('Loading cart routes...');
     app.use('/api/cart', require('./routes/cart.routes')); // Cart-related routes
+
+    console.log('Loading order routes...');
     app.use('/api/orders', require('./routes/order.routes')); // Order-related routes
+
+    console.log('Loading authentication routes...');
     app.use('/api/auth', require('./routes/auth.routes')); // Authentication routes
+
+    console.log('Loading admin routes...');
     app.use('/api/admin', require('./routes/admin.routes')); // Admin-related routes
-    console.log('Loading categories routes...');
-    app.use('/api/categories', require('./routes/category.routes')); // Categories-related routes (fixed path)
+
+    console.log('Loading category routes...');
+    app.use('/api/categories', require('./routes/category.routes')); // Categories-related routes
 } catch (error) {
     console.error('Error while loading routes:', error.message);
     process.exit(1); // Exit the application if routes cannot be loaded
@@ -56,6 +70,7 @@ try {
 
 // 404 handler for undefined endpoints
 app.use((req, res, next) => {
+    console.log(`404 error - Route not found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({
         message: 'Route not found', // Error message for undefined routes
         method: req.method, // HTTP method of the request
@@ -65,7 +80,7 @@ app.use((req, res, next) => {
 
 // Global error-handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack || err.message); // Log the full error stack or error message
+    console.error('Global error handler triggered:', err.stack || err.message); // Log the full error stack or error message
     res.status(500).json({
         message: 'Internal server error', // Generic error response
         error: process.env.NODE_ENV === 'development' ? err.message : undefined, // Include error details in development
