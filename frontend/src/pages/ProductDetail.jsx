@@ -1,30 +1,56 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { Heart, Share2, Star } from 'lucide-react';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 
 function ProductDetails() {
-    const { id } = useParams(); // 获取产品 ID
-    const navigate = useNavigate(); // 用于页面跳转
-    const { addToCart } = useCart(); // 从 CartContext 获取 addToCart 函数
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { addToCart } = useCart();
 
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [quantity, setQuantity] = useState(1);
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(0);
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
     useEffect(() => {
         const fetchProductDetails = async () => {
             try {
-                console.log(`Fetching product details for ID: ${id}`);
                 const response = await fetch(`${API_URL}/api/products/${id}`);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch product: ${response.statusText}`);
                 }
                 const data = await response.json();
-                console.log('Fetched product details:', data);
-                setProduct(data);
+                setProduct({
+                    ...data,
+                    // 添加示例图片数组，实际项目中应该从API获取
+                    images: [
+                        data.image_url,
+                        '/assets/images/product-2.jpg',
+                        '/assets/images/product-3.jpg',
+                        '/assets/images/product-4.jpg'
+                    ],
+                    // 添加示例规格，实际项目中应该从API获取
+                    specifications: {
+                        'Dimensions': '10 x 20 x 5 cm',
+                        'Weight': '500g',
+                        'Material': 'Premium Quality',
+                        'Warranty': '12 months'
+                    },
+                    // 添加示例评价，实际项目中应该从API获取
+                    reviews: [
+                        { id: 1, user: 'John Doe', rating: 5, comment: 'Excellent product!', date: '2024-03-01' },
+                        { id: 2, user: 'Jane Smith', rating: 4, comment: 'Good quality but a bit pricey.', date: '2024-02-28' }
+                    ]
+                });
             } catch (err) {
-                console.error('Error fetching product details:', err);
                 setError(err.message || 'An error occurred while fetching product details.');
             } finally {
                 setLoading(false);
@@ -34,25 +60,47 @@ function ProductDetails() {
         fetchProductDetails();
     }, [id, API_URL]);
 
+    const handleQuantityChange = (change) => {
+        const newQuantity = quantity + change;
+        if (newQuantity >= 1 && newQuantity <= product.stock) {
+            setQuantity(newQuantity);
+        }
+    };
+
+    const showNotification = (message) => {
+        setAlertMessage(message);
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+    };
+
     const handleAddToCart = () => {
-        if (product.stock < 1) {
-            alert('This product is out of stock.');
+        if (product.stock < quantity) {
+            showNotification('Not enough stock available.');
             return;
         }
 
-        addToCart(product); // 将商品添加到购物车
-        alert(`${product.name} has been added to your cart.`);
+        addToCart({ ...product, quantity });
+        showNotification(`${product.name} has been added to your cart.`);
     };
 
     const handleBuyNow = () => {
-        if (product.stock < 1) {
-            alert('This product is out of stock.');
+        if (product.stock < quantity) {
+            showNotification('Not enough stock available.');
             return;
         }
 
-        addToCart(product); // 添加到购物车
-        alert(`You are being redirected to the checkout page for ${product.name}.`);
-        navigate('/checkout'); // 重定向到结账页面
+        addToCart({ ...product, quantity });
+        navigate('/checkout');
+    };
+
+    const toggleFavorite = () => {
+        setIsFavorite(!isFavorite);
+        showNotification(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+    };
+
+    const handleShare = () => {
+        navigator.clipboard.writeText(window.location.href);
+        showNotification('Product link copied to clipboard!');
     };
 
     if (loading) {
@@ -81,38 +129,158 @@ function ProductDetails() {
         );
     }
 
+    const renderReviewStars = (rating) => {
+        return [...Array(5)].map((_, index) => (
+            <Star
+                key={index}
+                className={`w-4 h-4 ${index < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+            />
+        ));
+    };
+
     return (
         <section className="py-10 bg-gray-100">
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 className="text-2xl font-bold text-gray-800 mb-6">{product.name}</h1>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <img
-                        src={product.image_url || '/assets/images/placeholder.png'}
-                        alt={product.name}
-                        className="w-full h-auto rounded"
-                    />
-                    <div>
-                        <p className="text-lg text-gray-600 mb-4">{product.description}</p>
-                        <p className="text-2xl font-bold text-gray-800 mb-4">${product.price}</p>
-                        <p className={`text-sm ${product.stock > 0 ? 'text-gray-500' : 'text-red-500'}`}>
-                            Stock: {product.stock > 0 ? product.stock : 'Out of stock'}
-                        </p>
-                        <div className="mt-6 flex space-x-4">
+            {showAlert && (
+                <Alert className="fixed top-4 right-4 w-72 z-50">
+                    <AlertDescription>{alertMessage}</AlertDescription>
+                </Alert>
+            )}
+            
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* 图片展示区域 */}
+                    <div className="space-y-4">
+                        <div className="aspect-w-1 aspect-h-1 w-full">
+                            <img
+                                src={product.images[selectedImage] || '/assets/images/placeholder.png'}
+                                alt={product.name}
+                                className="w-full h-full object-cover rounded-lg"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                            {product.images.map((image, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setSelectedImage(index)}
+                                    className={`aspect-w-1 aspect-h-1 ${
+                                        selectedImage === index ? 'ring-2 ring-blue-500' : ''
+                                    }`}
+                                >
+                                    <img
+                                        src={image}
+                                        alt={`${product.name} view ${index + 1}`}
+                                        className="w-full h-full object-cover rounded"
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 产品信息区域 */}
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-start">
+                            <h1 className="text-3xl font-bold text-gray-800">{product.name}</h1>
+                            <div className="flex space-x-2">
+                                <button
+                                    onClick={toggleFavorite}
+                                    className={`p-2 rounded-full ${
+                                        isFavorite ? 'bg-red-100 text-red-500' : 'bg-gray-100 text-gray-500'
+                                    }`}
+                                >
+                                    <Heart className={`w-6 h-6 ${isFavorite ? 'fill-current' : ''}`} />
+                                </button>
+                                <button
+                                    onClick={handleShare}
+                                    className="p-2 rounded-full bg-gray-100 text-gray-500"
+                                >
+                                    <Share2 className="w-6 h-6" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <p className="text-3xl font-bold text-gray-800">${product.price}</p>
+
+                        <div className="flex items-center space-x-4">
+                            <p className={`text-sm ${product.stock > 0 ? 'text-gray-500' : 'text-red-500'}`}>
+                                Stock: {product.stock > 0 ? product.stock : 'Out of stock'}
+                            </p>
+                            {product.stock > 0 && (
+                                <div className="flex items-center border rounded">
+                                    <button
+                                        onClick={() => handleQuantityChange(-1)}
+                                        className="px-3 py-1 border-r hover:bg-gray-100"
+                                    >
+                                        -
+                                    </button>
+                                    <span className="px-4 py-1">{quantity}</span>
+                                    <button
+                                        onClick={() => handleQuantityChange(1)}
+                                        className="px-3 py-1 border-l hover:bg-gray-100"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex space-x-4">
                             <button
                                 onClick={handleAddToCart}
-                                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
                                 disabled={product.stock < 1}
                             >
                                 Add to Cart
                             </button>
                             <button
                                 onClick={handleBuyNow}
-                                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                                className="flex-1 px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
                                 disabled={product.stock < 1}
                             >
                                 Buy Now
                             </button>
                         </div>
+
+                        <Tabs defaultValue="description" className="w-full">
+                            <TabsList>
+                                <TabsTrigger value="description">Description</TabsTrigger>
+                                <TabsTrigger value="specifications">Specifications</TabsTrigger>
+                                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="description" className="mt-4">
+                                <p className="text-gray-600">{product.description}</p>
+                            </TabsContent>
+
+                            <TabsContent value="specifications" className="mt-4">
+                                <dl className="space-y-2">
+                                    {Object.entries(product.specifications).map(([key, value]) => (
+                                        <div key={key} className="grid grid-cols-2">
+                                            <dt className="text-gray-600">{key}</dt>
+                                            <dd className="text-gray-900">{value}</dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                            </TabsContent>
+
+                            <TabsContent value="reviews" className="mt-4">
+                                <div className="space-y-4">
+                                    {product.reviews.map((review) => (
+                                        <div key={review.id} className="border-b pb-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-2">
+                                                    <span className="font-semibold">{review.user}</span>
+                                                    <div className="flex">
+                                                        {renderReviewStars(review.rating)}
+                                                    </div>
+                                                </div>
+                                                <span className="text-sm text-gray-500">{review.date}</span>
+                                            </div>
+                                            <p className="mt-2 text-gray-600">{review.comment}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </TabsContent>
+                        </Tabs>
                     </div>
                 </div>
             </div>

@@ -12,10 +12,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@radix-ui/react-alert-dialog": "^1.1.2",
+    "@radix-ui/react-tabs": "^1.1.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.0.2",
-    "react-scripts": "^5.0.1"
+    "react-scripts": "^5.0.1",
+    "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
