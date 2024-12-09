@@ -1,48 +1,51 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
-// Create the CartContext
 export const CartContext = createContext();
 
-// Define CartProvider to manage cart state globally
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]); // Cart items
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem('cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Load cart data from backend on component mount
+  // Calculate total items and total price
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = cart.reduce((sum, item) => sum + item.quantity * item.price, 0);
+
+  // Sync cart to localStorage
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        setLoading(true); // Start loading
-        setError(null); // Reset error
-        const response = await fetch('http://localhost:5001/api/cart', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
 
-        if (!response.ok) {
-          throw new Error(`Error fetching cart: ${response.status}`);
-        }
+  // Fetch cart data from backend
+  const fetchCart = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('http://localhost:5001/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
 
-        const data = await response.json();
-        console.log('Fetched cart data:', data); // Debug log
-        // Update the cart state directly with the returned array
-        setCart(data || []); // Use `data` directly as cart
-      } catch (error) {
-        console.error('Error fetching cart:', error);
-        setError(error.message); // Set error message
-        setCart([]); // Fallback to empty cart
-      } finally {
-        setLoading(false); // End loading
+      if (!response.ok) {
+        throw new Error(`Error fetching cart: ${response.status}`);
       }
-    };
 
-    fetchCart();
-  }, []);
+      const data = await response.json();
+      setCart(data || []);
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      setError(error.message || 'Failed to load cart data.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Function to add a product to the cart
+  // Add product to cart
   const addToCart = async (product, quantity = 1) => {
     try {
-      setError(null); // Reset error
+      setError(null);
       const response = await fetch('http://localhost:5001/api/cart/add', {
         method: 'POST',
         headers: {
@@ -56,7 +59,6 @@ export const CartProvider = ({ children }) => {
         throw new Error(`Error adding to cart: ${response.status}`);
       }
 
-      const newItem = { ...product, quantity };
       setCart((prev) => {
         const existingItem = prev.find((item) => item.id === product.id);
         if (existingItem) {
@@ -64,18 +66,23 @@ export const CartProvider = ({ children }) => {
             item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
           );
         }
-        return [...prev, newItem];
+        return [...prev, { ...product, quantity }];
       });
     } catch (error) {
       console.error('Error adding to cart:', error);
-      setError(error.message);
+      setError(error.message || 'Failed to add product to cart.');
     }
   };
 
-  // Function to update the quantity of an item in the cart
+  // Update cart item quantity
   const updateCartItem = async (id, quantity) => {
+    if (quantity < 1) {
+      setError('Quantity must be at least 1.');
+      return;
+    }
+
     try {
-      setError(null); // Reset error
+      setError(null);
       const response = await fetch(`http://localhost:5001/api/cart/update/${id}`, {
         method: 'PUT',
         headers: {
@@ -94,14 +101,14 @@ export const CartProvider = ({ children }) => {
       );
     } catch (error) {
       console.error('Error updating cart:', error);
-      setError(error.message);
+      setError(error.message || 'Failed to update cart item.');
     }
   };
 
-  // Function to remove an item from the cart
+  // Remove item from cart
   const removeFromCart = async (id) => {
     try {
-      setError(null); // Reset error
+      setError(null);
       const response = await fetch(`http://localhost:5001/api/cart/remove/${id}`, {
         method: 'DELETE',
         headers: {
@@ -116,20 +123,29 @@ export const CartProvider = ({ children }) => {
       setCart((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       console.error('Error removing item:', error);
-      setError(error.message);
+      setError(error.message || 'Failed to remove cart item.');
     }
   };
 
   return (
     <CartContext.Provider
-      value={{ cart, loading, error, addToCart, updateCartItem, removeFromCart }}
+      value={{
+        cart,
+        loading,
+        error,
+        totalItems,
+        totalPrice,
+        addToCart,
+        updateCartItem,
+        removeFromCart,
+        fetchCart,
+      }}
     >
       {children}
     </CartContext.Provider>
   );
 };
 
-// Custom hook to use CartContext
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {

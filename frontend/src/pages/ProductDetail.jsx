@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useCart } from '../contexts/CartContext';
 
 function ProductDetails() {
     const { id } = useParams(); // 获取产品 ID
+    const navigate = useNavigate(); // 用于页面跳转
+    const { addToCart } = useCart(); // 从 CartContext 获取 addToCart 函数
+
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -31,15 +35,24 @@ function ProductDetails() {
     }, [id, API_URL]);
 
     const handleAddToCart = () => {
-        console.log(`Adding product ID ${product.id} to cart...`);
-        // Mock function to simulate adding to cart
+        if (product.stock < 1) {
+            alert('This product is out of stock.');
+            return;
+        }
+
+        addToCart(product); // 将商品添加到购物车
         alert(`${product.name} has been added to your cart.`);
     };
 
     const handleBuyNow = () => {
-        console.log(`Purchasing product ID ${product.id}...`);
-        // Mock function to simulate purchase action
-        alert(`You have purchased ${product.name}. Redirecting to checkout...`);
+        if (product.stock < 1) {
+            alert('This product is out of stock.');
+            return;
+        }
+
+        addToCart(product); // 添加到购物车
+        alert(`You are being redirected to the checkout page for ${product.name}.`);
+        navigate('/checkout'); // 重定向到结账页面
     };
 
     if (loading) {
@@ -81,17 +94,21 @@ function ProductDetails() {
                     <div>
                         <p className="text-lg text-gray-600 mb-4">{product.description}</p>
                         <p className="text-2xl font-bold text-gray-800 mb-4">${product.price}</p>
-                        <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+                        <p className={`text-sm ${product.stock > 0 ? 'text-gray-500' : 'text-red-500'}`}>
+                            Stock: {product.stock > 0 ? product.stock : 'Out of stock'}
+                        </p>
                         <div className="mt-6 flex space-x-4">
                             <button
                                 onClick={handleAddToCart}
                                 className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                disabled={product.stock < 1}
                             >
                                 Add to Cart
                             </button>
                             <button
                                 onClick={handleBuyNow}
                                 className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                                disabled={product.stock < 1}
                             >
                                 Buy Now
                             </button>
