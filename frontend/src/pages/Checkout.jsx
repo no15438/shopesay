@@ -4,11 +4,16 @@ import { CartContext } from '../contexts/CartContext';
 function Checkout() {
   const { cart } = useContext(CartContext);
 
+  // 通过环境变量读取后端 URL
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+
+  // 计算总金额
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
+  // 处理确认订单逻辑
   const handleConfirmOrder = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -16,6 +21,7 @@ function Checkout() {
         },
         body: JSON.stringify({ items: cart }),
       });
+
       if (response.ok) {
         alert('Order placed successfully!');
       } else {
@@ -23,6 +29,7 @@ function Checkout() {
       }
     } catch (error) {
       console.error('Error placing order:', error);
+      alert('An error occurred while placing the order.');
     }
   };
 

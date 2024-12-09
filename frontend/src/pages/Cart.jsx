@@ -3,7 +3,6 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 // 修改导入路径
 import { useCart } from '../contexts/CartContext';
 
-{/* 其余代码保持不变 */}
 const CartItem = ({ item, onUpdateQuantity, onRemove }) => (
   <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
     <div className="flex-1">
