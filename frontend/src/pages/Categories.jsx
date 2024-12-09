@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function Categories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate();
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
   useEffect(() => {
-    // Fetch categories from backend
     const fetchCategories = async () => {
       try {
         const response = await fetch(`${API_URL}/api/categories`);
         const data = await response.json();
-
         if (response.ok) {
           setCategories(data.categories);
         } else {
@@ -26,7 +24,6 @@ function Categories() {
         setLoading(false);
       }
     };
-
     fetchCategories();
   }, []);
 
@@ -46,7 +43,8 @@ function Categories() {
           {categories.map((category) => (
             <div
               key={category.id}
-              className="bg-white shadow rounded-lg p-4 hover:shadow-lg transition-shadow"
+              onClick={() => navigate(`/categories/${category.id}`)}
+              className="bg-white shadow rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
             >
               <img
                 src={category.image_url || 'https://via.placeholder.com/150'}
@@ -55,12 +53,6 @@ function Categories() {
               />
               <h2 className="text-xl font-semibold text-gray-900">{category.name}</h2>
               <p className="text-gray-600">{category.description}</p>
-              <Link
-                to={`/categories/${category.id}`}
-                className="text-blue-600 hover:underline mt-2 block"
-              >
-                View Products in {category.name}
-              </Link>
             </div>
           ))}
         </div>
