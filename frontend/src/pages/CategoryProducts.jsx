@@ -73,9 +73,10 @@ function CategoryProducts() {
         <h1 className="text-2xl font-bold text-gray-800 mb-6">{categoryName}</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
-            <div
+            <Link
               key={product.id}
-              className="border p-4 rounded shadow hover:shadow-lg transition"
+              to={`/product/${product.id}`} // 整个卡片跳转到产品详情页
+              className="border p-4 rounded shadow hover:shadow-lg transition block"
             >
               <img
                 src={product.image_url || '/assets/images/placeholder.png'}
@@ -85,13 +86,7 @@ function CategoryProducts() {
               <h3 className="text-lg font-bold mb-2">{product.name}</h3>
               <p className="text-sm text-gray-600 mb-4">{product.description}</p>
               <p className="text-gray-800 font-bold text-lg mb-4">${product.price}</p>
-              <Link
-                to={`/product/${product.id}`}
-                className="text-blue-600 hover:underline"
-              >
-                View Details
-              </Link>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
