@@ -41,30 +41,35 @@ exports.getProductById = async (req, res) => {
 // Get products by category (with pagination)
 exports.getProductsByCategory = async (req, res) => {
     try {
-        const { categoryId } = req.params;
-        const { page = 1, limit = 10 } = req.query; // 默认每页 10 条
-        const offset = (page - 1) * limit;
-
-        console.log(`[DEBUG] Fetching products for category ID: ${categoryId} (Page: ${page}, Limit: ${limit})`);
-
-        const [products] = await db.execute(`
-            SELECT * FROM products 
-            WHERE category_id = ?
-            ORDER BY created_at DESC
-            LIMIT ? OFFSET ?
-        `, [categoryId, parseInt(limit), parseInt(offset)]);
-
-        if (products.length === 0) {
-            return res.status(404).json({ message: 'No products found for this category.' });
-        }
-
-        console.log(`[DEBUG] Products fetched:`, products);
-        res.json(products);
+      const { categoryId } = req.params;
+  
+      // 查询分类名称
+      const [categoryResult] = await db.execute(
+        `SELECT name FROM categories WHERE id = ?`,
+        [categoryId]
+      );
+  
+      if (categoryResult.length === 0) {
+        return res.status(404).json({ message: 'Category not found' });
+      }
+  
+      const categoryName = categoryResult[0].name;
+  
+      // 查询该分类下的产品
+      const [productsResult] = await db.execute(
+        `SELECT * FROM products WHERE category_id = ? ORDER BY created_at DESC`,
+        [categoryId]
+      );
+  
+      res.json({
+        categoryName,
+        products: productsResult,
+      });
     } catch (error) {
-        console.error('Error fetching products by category:', error);
-        res.status(500).json({ message: 'Failed to fetch products by category' });
+      console.error('Error fetching category products:', error);
+      res.status(500).json({ message: 'Failed to fetch category products.' });
     }
-};
+  };
 
 // Create a new product (Admin only)
 exports.createProduct = async (req, res) => {

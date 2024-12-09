@@ -3,9 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 
 function CategoryProducts() {
   const { id } = useParams(); // 获取分类 ID
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [products, setProducts] = useState([]); // 存储产品列表
+  const [categoryName, setCategoryName] = useState(''); // 存储分类名称
+  const [loading, setLoading] = useState(true); // 控制加载状态
+  const [error, setError] = useState(null); // 存储错误信息
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
   useEffect(() => {
@@ -17,9 +18,17 @@ function CategoryProducts() {
         if (!response.ok) {
           throw new Error(`Failed to fetch products: ${response.statusText}`);
         }
+
         const data = await response.json();
-        console.log('Fetched products:', data); // Debugging log
-        setProducts(data);
+
+        // 验证响应格式
+        if (!data.categoryName || !Array.isArray(data.products)) {
+          throw new Error('Invalid response format: categoryName or products missing');
+        }
+
+        // 更新状态
+        setCategoryName(data.categoryName);
+        setProducts(data.products);
       } catch (err) {
         console.error('Error fetching category products:', err);
         setError(err.message || 'An error occurred while fetching products.');
@@ -49,10 +58,10 @@ function CategoryProducts() {
     );
   }
 
-  if (products.length === 0) {
+  if (!products || products.length === 0) {
     return (
       <div className="text-gray-600 text-center font-semibold">
-        <p>No products found for this category.</p>
+        <p>No products found for the category "{categoryName}".</p>
       </div>
     );
   }
@@ -60,11 +69,12 @@ function CategoryProducts() {
   return (
     <section className="py-10 bg-gray-100">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Category Products</h1>
+        {/* 显示分类名称 */}
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{categoryName}</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
             <div
-              key={product.id} // Ensure `id` exists
+              key={product.id}
               className="border p-4 rounded shadow hover:shadow-lg transition"
             >
               <img
@@ -76,7 +86,7 @@ function CategoryProducts() {
               <p className="text-sm text-gray-600 mb-4">{product.description}</p>
               <p className="text-gray-800 font-bold text-lg mb-4">${product.price}</p>
               <Link
-                to={`/product/${product.id}`} // Correct URL
+                to={`/product/${product.id}`}
                 className="text-blue-600 hover:underline"
               >
                 View Details
