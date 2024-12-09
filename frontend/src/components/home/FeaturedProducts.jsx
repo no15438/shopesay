@@ -49,7 +49,11 @@ const FeaturedProducts = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => (
-        <div key={product.id} className="border p-4 rounded shadow hover:shadow-lg transition">
+        <Link
+          key={product.id}
+          to={`/product/${product.id}`} // 跳转到商品详情页面
+          className="block border p-4 rounded shadow hover:shadow-lg transition"
+        >
           <img
             src={product.image_url || '/assets/images/placeholder.png'}
             alt={product.name}
@@ -58,13 +62,7 @@ const FeaturedProducts = () => {
           <h3 className="text-lg font-bold mb-2">{product.name}</h3>
           <p className="text-sm text-gray-600 mb-4">{product.description}</p>
           <p className="text-gray-800 font-bold text-lg">${product.price}</p>
-          <Link
-            to={`/product/${product.id}`} // 跳转到商品详情页面
-            className="text-blue-600 hover:underline"
-          >
-            View Details
-          </Link>
-        </div>
+        </Link>
       ))}
     </div>
   );
