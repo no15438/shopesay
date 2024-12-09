@@ -7,14 +7,20 @@ const { verifyToken, verifyAdmin } = require('../middlewares/auth.middleware');
 const handleValidationErrors = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({
+            message: 'Validation failed',
+            errors: errors.array().map(err => ({
+                field: err.param,
+                message: err.msg
+            }))
+        });
     }
     next();
 };
 
 // Log route usage for debugging
 router.use((req, res, next) => {
-    console.log(`Product route hit: ${req.method} ${req.originalUrl}`);
+    console.log(`[${new Date().toISOString()}] Product route hit: ${req.method} ${req.originalUrl}`);
     next();
 });
 
@@ -26,7 +32,7 @@ router.get('/featured', (req, res) => {
     productController.getFeaturedProducts(req, res);
 });
 
-// Get all products
+// Get all products with pagination support
 router.get('/', (req, res) => {
     console.log('GET /api/products route hit');
     productController.getAllProducts(req, res);
@@ -38,7 +44,7 @@ router.get('/:id', (req, res) => {
     productController.getProductById(req, res);
 });
 
-// Get products by category
+// Get products by category with pagination
 router.get('/category/:categoryId', (req, res) => {
     console.log(`GET /api/products/category/${req.params.categoryId} route hit`);
     productController.getProductsByCategory(req, res);

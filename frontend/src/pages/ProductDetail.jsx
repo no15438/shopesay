@@ -1,137 +1,106 @@
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { useCart } from '../contexts/CartContext';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-const ProductDetail = () => {
-  const { id } = useParams(); // 获取产品ID
-  const [product, setProduct] = useState(null); // 产品信息
-  const [loading, setLoading] = useState(true); // 加载状态
-  const [processingOrder, setProcessingOrder] = useState(false); // 下单状态
-  const [message, setMessage] = useState(""); // 用户消息
-  const [error, setError] = useState(""); // 错误信息
-  const { addToCart } = useCart(); // 从 CartContext 获取 addToCart 函数
-  const navigate = useNavigate();
+function ProductDetails() {
+    const { id } = useParams(); // 获取产品 ID
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await fetch(`http://localhost:5001/api/products/${id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch product');
-        }
-        const data = await response.json();
-        setProduct(data.product);
-      } catch (error) {
-        setError("Failed to load product details. Please try again.");
-        console.error('Error fetching product:', error);
-      } finally {
-        setLoading(false);
-      }
+    useEffect(() => {
+        const fetchProductDetails = async () => {
+            try {
+                console.log(`Fetching product details for ID: ${id}`);
+                const response = await fetch(`${API_URL}/api/products/${id}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch product: ${response.statusText}`);
+                }
+                const data = await response.json();
+                console.log('Fetched product details:', data);
+                setProduct(data);
+            } catch (err) {
+                console.error('Error fetching product details:', err);
+                setError(err.message || 'An error occurred while fetching product details.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProductDetails();
+    }, [id, API_URL]);
+
+    const handleAddToCart = () => {
+        console.log(`Adding product ID ${product.id} to cart...`);
+        // Mock function to simulate adding to cart
+        alert(`${product.name} has been added to your cart.`);
     };
 
-    fetchProduct();
-  }, [id]);
+    const handleBuyNow = () => {
+        console.log(`Purchasing product ID ${product.id}...`);
+        // Mock function to simulate purchase action
+        alert(`You have purchased ${product.name}. Redirecting to checkout...`);
+    };
 
-  const handleAddToCart = () => {
-    if (!product || product.stock <= 0) {
-      setError("Product is out of stock.");
-      setTimeout(() => setError(""), 3000);
-      return;
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+                <p className="ml-4 text-blue-500 font-semibold">Loading product details...</p>
+            </div>
+        );
     }
-    console.log('Add to Cart clicked'); // Debugging message
-    addToCart(product, 1); // 调用 CartContext 的 addToCart 方法
-    setMessage("Added to cart successfully!"); // 显示成功消息
-    setTimeout(() => setMessage(""), 3000); // 清除消息
-  };
 
-  const handleBuyNow = async () => {
-    if (!product || product.stock <= 0) {
-      setError("Product is out of stock.");
-      setTimeout(() => setError(""), 3000);
-      return;
+    if (error) {
+        return (
+            <div className="text-red-500 text-center font-semibold">
+                <p>Error: {error}</p>
+                <p>Please try refreshing the page or check back later.</p>
+            </div>
+        );
     }
-    console.log('Buy Now clicked'); // Debugging message
-    setProcessingOrder(true); // 显示下单状态
-    try {
-      const response = await fetch('http://localhost:5001/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity: 1,
-          shippingAddress: "123 Main St, Example City",
-        }),
-      });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to place order');
-      }
-
-      const order = await response.json();
-      navigate(`/order/${order.id}`); // 跳转到订单详情页
-    } catch (error) {
-      setError("Failed to place the order. Please try again.");
-      console.error('Error placing order:', error);
-      setTimeout(() => setError(""), 3000); // 清除错误消息
-    } finally {
-      setProcessingOrder(false); // 恢复下单状态
+    if (!product) {
+        return (
+            <div className="text-gray-600 text-center font-semibold">
+                <p>Product not found.</p>
+            </div>
+        );
     }
-  };
 
-  if (loading) {
-    return <div className="text-center text-xl">Loading product details...</div>;
-  }
+    return (
+        <section className="py-10 bg-gray-100">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h1 className="text-2xl font-bold text-gray-800 mb-6">{product.name}</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <img
+                        src={product.image_url || '/assets/images/placeholder.png'}
+                        alt={product.name}
+                        className="w-full h-auto rounded"
+                    />
+                    <div>
+                        <p className="text-lg text-gray-600 mb-4">{product.description}</p>
+                        <p className="text-2xl font-bold text-gray-800 mb-4">${product.price}</p>
+                        <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+                        <div className="mt-6 flex space-x-4">
+                            <button
+                                onClick={handleAddToCart}
+                                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                            >
+                                Add to Cart
+                            </button>
+                            <button
+                                onClick={handleBuyNow}
+                                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                            >
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
 
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
-  }
-
-  if (!product) {
-    return <div className="text-center text-red-500">Product not found</div>;
-  }
-
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex flex-col md:flex-row">
-        <img
-          src={`http://localhost:5001/images/${product.image_url}`}
-          alt={product.name}
-          className="w-full md:w-1/2 rounded"
-          onError={(e) => (e.target.src = "/default-image.png")} // 替换为默认图片
-        />
-        <div className="md:ml-6">
-          <h1 className="text-2xl font-bold mb-4">{product.name}</h1>
-          <p className="text-gray-600 mb-4">{product.description}</p>
-          <p className="text-xl font-semibold text-blue-600 mb-4">${product.price}</p>
-          <p className={`text-lg mb-6 ${product.stock > 0 ? "text-green-600" : "text-red-600"}`}>
-            {product.stock > 0 ? `In Stock: ${product.stock}` : "Out of Stock"}
-          </p>
-          {message && <p className="text-green-500 mb-4">{message}</p>}
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          <div className="flex space-x-4">
-            <button
-              onClick={handleAddToCart}
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500"
-              disabled={processingOrder || product.stock <= 0}
-            >
-              Add to Cart
-            </button>
-            <button
-              onClick={handleBuyNow}
-              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-500"
-              disabled={processingOrder || product.stock <= 0}
-            >
-              {processingOrder ? "Processing..." : "Buy Now"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default ProductDetail;
+export default ProductDetails;

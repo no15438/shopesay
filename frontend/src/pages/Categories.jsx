@@ -59,7 +59,7 @@ function Categories() {
                 to={`/categories/${category.id}`}
                 className="text-blue-600 hover:underline mt-2 block"
               >
-                View Products
+                View Products in {category.name}
               </Link>
             </div>
           ))}
