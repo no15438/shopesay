@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
-import Layout from './components/layout/Layout'; // 使用 Layout 替代重复代码
+import Layout from './components/layout/Layout'; 
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
@@ -15,6 +15,8 @@ import ProductDetail from './pages/ProductDetail';
 import NotFound from './pages/NotFound';
 
 function App() {
+  console.log("API URL:", process.env.REACT_APP_API_URL); // 调试环境变量
+
   return (
     <AuthProvider>
       <CartProvider>

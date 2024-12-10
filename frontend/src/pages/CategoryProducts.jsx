@@ -7,7 +7,7 @@ function CategoryProducts() {
   const [categoryName, setCategoryName] = useState(''); // 存储分类名称
   const [loading, setLoading] = useState(true); // 控制加载状态
   const [error, setError] = useState(null); // 存储错误信息
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+  const API_URL = process.env.REACT_APP_API_URL; 
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {

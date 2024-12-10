@@ -6,7 +6,7 @@ const FeaturedProducts = () => {
   const [loading, setLoading] = useState(true); // 加载状态
   const [error, setError] = useState(null); // 错误状态
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001'; // 后端 API 地址
+  const API_URL = process.env.REACT_APP_API_URL; 
 
   useEffect(() => {
     const fetchProducts = async () => {

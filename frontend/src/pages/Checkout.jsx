@@ -5,7 +5,7 @@ function Checkout() {
   const { cart } = useContext(CartContext);
 
   // 通过环境变量读取后端 URL
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+  const API_URL = process.env.REACT_APP_API_URL; 
 
   // 计算总金额
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);

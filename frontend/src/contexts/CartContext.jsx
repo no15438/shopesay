@@ -4,7 +4,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 export const CartContext = createContext();
 
 // API 基础 URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+const API_URL = process.env.REACT_APP_API_URL; 
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
