@@ -2,8 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 require('dotenv').config({ path: '.env' });
+
 console.log('Environment Variables:', process.env);
 console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
+
 const db = require('./config/db');
 
 const app = express();
@@ -36,9 +38,16 @@ db.getConnection((err) => {
 
 // Middleware setup
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
+    origin: [
+        'http://localhost:3000', // 本地开发前端
+        process.env.FRONTEND_URL, // 生产前端
+    ],
+    credentials: true, // 允许跨域认证
 }));
+
+// 处理 OPTIONS 预检请求
+app.options('*', cors());
+
 app.use(express.json());
 app.use(process.env.NODE_ENV === 'development' ? morgan('dev') : morgan('combined'));
 
