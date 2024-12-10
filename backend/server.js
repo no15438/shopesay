@@ -114,7 +114,7 @@ app.use((req, res) => {
 });
 
 // Enhanced global error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error('Global error:', {
     message: err.message,
     stack: err.stack,
