@@ -4,7 +4,7 @@ USE shopping_site;
 CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     fullname VARCHAR(100),
     address TEXT,
@@ -85,10 +85,11 @@ INSERT INTO categories (name, description) VALUES
 ('Toys', 'Toys and games for kids')
 ON DUPLICATE KEY UPDATE description=VALUES(description);
 
-INSERT INTO users (username, password, email, fullname, is_admin) VALUES
-('admin', '$2b$10$yourhashedpassword', 'admin@example.com', 'Admin User', TRUE),
-('johndoe', '$2b$10$hashedpasswordforuser', 'johndoe@example.com', 'John Doe', FALSE),
-('janedoe', '$2b$10$hashedpasswordforuser', 'janedoe@example.com', 'Jane Doe', FALSE)
+INSERT INTO users (username, password_hash, email, fullname, is_admin) 
+VALUES 
+('admin', '$2a$10$f1eQ.xsQSsslts02FEkAROEbKNz5HVY83nrEn2dQF8N2Dp9I9Id1K', 'admin@example.com', 'Admin User', TRUE),
+('johndoe', '$2a$10$.TyEYdEoTiImXVLLp5gbf.2eEFdkXh3Mcx3sLMk0GpTzePveef1hK', 'johndoe@example.com', 'John Doe', FALSE),
+('janedoe', '$2a$10$vzINnzJ9mtiEhhxQD0M2lehqneNgPgvJFUbqeKNziXDD5Y1dP8YdC', 'janedoe@example.com', 'Jane Doe', FALSE)
 ON DUPLICATE KEY UPDATE email=VALUES(email);
 
 INSERT INTO products (name, description, price, stock, image_url, category_id) VALUES
