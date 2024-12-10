@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-require('dotenv').config();
+require('dotenv').config({ path: '/Users/no15438/Desktop/shopesay/backend/.env' });
 const db = require('./config/db');
 
 const app = express();
