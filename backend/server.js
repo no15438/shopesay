@@ -3,6 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 require('dotenv').config({ path: '.env' });
 
+// Enhanced logging for environment variables
 console.log('Environment Variables loaded');
 console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
 console.log('NODE_ENV:', process.env.NODE_ENV);
@@ -20,50 +21,64 @@ requiredEnvVars.forEach((varName) => {
   }
 });
 
-// Database connection
+// Database connection with enhanced error handling
 db.getConnection((err) => {
   if (err) {
-    console.error('Database connection failed:', err);
+    console.error('Database connection failed:', {
+      message: err.message,
+      stack: err.stack,
+      code: err.code,
+      state: err.state
+    });
     process.exit(1);
+  } else {
+    console.log('Database connected successfully');
   }
-  console.log('Database connected successfully');
 });
 
-// Simplified CORS configuration
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://shopesay-no15438s-projects.vercel.app',
+  'https://shopeasy-backend.vercel.app'
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-  origin: true,  // Allow all origins
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with']
 }));
 
-// Basic middleware
+// Pre-flight requests
+app.options('*', cors());
+
+// Middleware setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined'));
+app.use(process.env.NODE_ENV === 'development' ? morgan('dev') : morgan('combined'));
 
-// CORS headers middleware
-app.use((req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle OPTIONS method
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({
-      body: "OK"
-    });
-  }
-  
-  next();
-});
-
-// Request logging
-app.use((req, res) => {
+// Request logging middleware
+app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log('Request Headers:', req.headers);
   next();
 });
 
-// Health check route
+// Default route with health check
 app.get('/', (req, res) => {
   res.status(200).json({ 
     message: 'Server is running!', 
@@ -72,7 +87,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Routes
+// Routes registration with error handling
 const routes = [
   { path: '/api/products', router: './routes/product.routes' },
   { path: '/api/cart', router: './routes/cart.routes' },
@@ -98,20 +113,27 @@ app.use((req, res) => {
   });
 });
 
-// Error handler
+// Enhanced global error handler
 app.use((err, req, res) => {
-  console.error('Global error:', err);
-  
+  console.error('Global error:', {
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+
   res.status(err.status || 500).json({
     message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err : undefined,
     path: req.path,
     timestamp: new Date().toISOString()
   });
 });
 
-// Graceful shutdown
+// Graceful shutdown handler
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down...');
+  console.log('SIGTERM received. Performing graceful shutdown...');
   db.end(() => {
     console.log('Database connections closed.');
     process.exit(0);
@@ -121,4 +143,5 @@ process.on('SIGTERM', () => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  console.log(`Allowed Origins:`, allowedOrigins);
 });
