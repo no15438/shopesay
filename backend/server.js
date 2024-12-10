@@ -38,30 +38,36 @@ db.getConnection((err) => {
 
 // CORS configuration
 const allowedOrigins = [
-  'http://localhost:3000',
-  'https://shopesay-no15438s-projects.vercel.app',
-  'https://shopeasy-backend.vercel.app'
-];
-
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-}
-
-app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with']
-}));
+    'http://localhost:3000',
+    /^https:\/\/shopesay-.*-no15438s-projects\.vercel\.app$/
+  ];
+  
+  if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+  }
+  
+  app.use(cors({
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // 检查是否匹配任何允许的域名或正则表达式
+      const allowed = allowedOrigins.some(allowed => {
+        return typeof allowed === 'string' 
+          ? allowed === origin
+          : allowed.test(origin);
+      });
+      
+      if (!allowed) {
+        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with']
+  }));
 
 // Pre-flight requests
 app.options('*', cors());
