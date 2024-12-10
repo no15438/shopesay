@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-require('dotenv').config({ path: '/Users/no15438/Desktop/shopesay/backend/.env' });
+require('dotenv').config({ path: '.env' });
+console.log('Environment Variables:', process.env);
+console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
 const db = require('./config/db');
 
 const app = express();
